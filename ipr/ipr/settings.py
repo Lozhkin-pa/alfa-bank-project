@@ -21,10 +21,11 @@ if DEBUG:
     env_path = Path(__file__).resolve().parents[2] / ".env"
     load_dotenv(dotenv_path=env_path)
 
-ALLOWED_HOSTS = os.getenv(
-    "SERVERNAMES",
-    default="localhost 127.0.0.1 [::1] testserver",
-).split(" ")
+ALLOWED_HOSTS = ["*"]
+# ALLOWED_HOSTS = os.getenv(
+#     "SERVERNAMES",
+#     default="localhost 127.0.0.1 [::1] testserver",
+# ).split(" ")
 
 AUTH_USER_MODEL = "users.User"
 
