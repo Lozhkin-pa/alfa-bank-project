@@ -1,8 +1,6 @@
 from django.db import models
-from django.contrib.auth import get_user_model
 
-
-CustomUser = get_user_model()
+from users.models import User
 
 
 class Ipr(models.Model):
@@ -23,13 +21,13 @@ class Ipr(models.Model):
         verbose_name='Название ИПР',
     )
     employee = models.ForeignKey(
-        CustomUser,
+        User,
         on_delete=models.CASCADE,
         related_name='ipr_employee',
         verbose_name='Сотрудник'
     )
     author = models.ForeignKey(
-        CustomUser,
+        User,
         on_delete=models.SET_NULL,
         null=True,
         related_name='ipr_author',
