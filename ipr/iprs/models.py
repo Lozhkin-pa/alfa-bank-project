@@ -67,3 +67,93 @@ class Ipr(models.Model):
 
     def __str__(self):
         return self.title
+
+
+STATUS_CHOICE = [
+        ('none', 'Отсутствует'),
+        ('in_progress', 'В работе'),
+        ('done', 'Выполнен'),
+        ('not_done', 'Не выполнен'),
+        ('canceled', 'Отменен'),
+    ]
+
+
+class Task(models.Model):
+    """Модель задач"""
+    title = models.CharField(
+        max_length=200,
+        verbose_name="Название"
+    )
+    description = models.TextField(
+        verbose_name='Описание'
+    )
+    status = models.CharField(
+        max_length=20,
+        choices=STATUS_CHOICE,
+        default='none',
+        verbose_name='Статус'
+    )
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='Автор',
+        related_name='author_tasks'
+    )
+    ipr = models.ForeignKey(
+        Ipr,
+        on_delete=models.CASCADE,
+        verbose_name='ИПР',
+        related_name='tasks_ipr'
+    )
+    created_date = models.DateField(
+        auto_now_add=True,
+        verbose_name='Дата создания'
+    )
+    deadline = models.DateField(
+        verbose_name='Дедлайн',
+        null=True,
+        blank=True
+    )
+
+    class Meta:
+        verbose_name = 'Задача'
+        verbose_name_plural = 'Задачи'
+        ordering = ('-author',)
+
+    def __str__(self):
+        return self.title
+
+
+class Comment(models.Model):
+    """Модель комментариев"""
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
+    task = models.ForeignKey(
+        Task,
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
+    text = models.TextField()
+    created_date = models.DateTimeField(
+        'Дата добавления',
+        auto_now_add=True,
+        db_index=True
+    )
+    reply = models.ForeignKey(
+        'self',
+        related_name=('replies'),
+        on_delete=models.CASCADE,
+        blank=True,
+        null=True
+    )
+
+    class Meta:
+        verbose_name = 'Коментарий'
+        verbose_name_plural = 'Коментарии'
+        ordering = ('id',)
+
+    def __str__(self):
+        return self.text

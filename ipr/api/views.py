@@ -1,9 +1,10 @@
+from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, authentication, permissions, viewsets
 
 from .permissions import IsAdminOrSelf, IsAuthenticatedReadOnly
-from .serializers import UserSerializer, CreateIprSerializer, ReadIprSerializer
-from iprs.models import Ipr
+from .serializers import CommentSerializer, CreateTaskSerializer, TaskSerializer, UserSerializer, CreateIprSerializer, ReadIprSerializer
+from iprs.models import Ipr, Task
 from users.models import User
 
 
@@ -46,3 +47,28 @@ class IprViewSet(viewsets.ModelViewSet):
             return Ipr.objects.filter(author=self.request.user)
         if self.request.user.subordinates:
             return Ipr.objects.filter(employee=self.request.user)
+
+
+class TaskViewSet(viewsets.ModelViewSet):
+    queryset = Task.objects.all()
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return TaskSerializer
+        return CreateTaskSerializer
+
+    def perform_create(self, serializer):
+        serializer.save(author=self.request.user)
+
+
+class CommentViewSet(viewsets.ModelViewSet):
+    serializer_class = CommentSerializer
+
+    def perform_create(self, serializer):
+        task = get_object_or_404(Task, id=self.kwargs.get('task_id'))
+        serializer.save(author=self.request.user, task=task)
+
+    def get_queryset(self):
+        task = get_object_or_404(Task, id=self.kwargs.get('task_id'))
+        return task.comments.all()
