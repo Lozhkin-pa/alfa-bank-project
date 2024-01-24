@@ -1,11 +1,17 @@
 asgiref==3.7.2
+cffi==1.16.0
+cryptography==42.0.0
+Deprecated==1.2.14
 Django==4.2
+django-filter==23.5
 djangorestframework==3.14.0
 idna==3.6
 jwcrypto==1.5.1
 oauthlib==3.2.2
 pillow==10.2.0
 psycopg2-binary==2.9.9
+pycparser==2.21
 python-dotenv==1.0.0
 pytz==2023.3.post1
 sqlparse==0.4.4
+wrapt==1.16.0
