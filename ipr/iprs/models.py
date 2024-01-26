@@ -7,12 +7,14 @@ class Ipr(models.Model):
     NOT_STARTED = 'Not started'
     IN_PROGRESS = 'In progress'
     DONE = 'Done'
+    FAILED = 'Failed'
     CANCELED = 'Canceled'
     NO_STATUS = 'No status'
     STATUS_CHOICES = (
         (NOT_STARTED, 'Не начат'),
         (IN_PROGRESS, 'В работе'),
         (DONE, 'Выполнен'),
+        (FAILED, 'Не выполнен'),
         (CANCELED, 'Отменен'),
         (NO_STATUS, 'Отсутствует'),
     )
