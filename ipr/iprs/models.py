@@ -69,17 +69,15 @@ class Ipr(models.Model):
         return self.title
 
 
-STATUS_CHOICE = [
-        ('none', 'Отсутствует'),
-        ('in_progress', 'В работе'),
-        ('done', 'Выполнен'),
-        ('not_done', 'Не выполнен'),
-        ('canceled', 'Отменен'),
-    ]
-
-
 class Task(models.Model):
     """Модель задач"""
+    STATUS_CHOICE = [
+        ('failed', 'Просрочен'),
+        ('no_status', 'Без статуса'),
+        ('in_progress', 'В работе'),
+        ('done', 'Выполнен'),
+        ('canceled', 'Отменен'),
+    ]
     title = models.CharField(
         max_length=200,
         verbose_name="Название"
@@ -90,7 +88,7 @@ class Task(models.Model):
     status = models.CharField(
         max_length=20,
         choices=STATUS_CHOICE,
-        default='none',
+        default='no_status',
         verbose_name='Статус'
     )
     author = models.ForeignKey(
@@ -109,10 +107,11 @@ class Task(models.Model):
         auto_now_add=True,
         verbose_name='Дата создания'
     )
-    deadline = models.DateField(
-        verbose_name='Дедлайн',
-        null=True,
-        blank=True
+    start_date = models.DateField(
+        verbose_name='Плановое время начала'
+    )
+    end_date = models.DateField(
+        verbose_name='Дата завершения'
     )
 
     class Meta:

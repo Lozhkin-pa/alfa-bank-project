@@ -2,13 +2,15 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import generics, authentication, permissions, viewsets
 
+from .filters import TaskFilter
 from .permissions import IsAdminOrSelf, IsAuthenticatedReadOnly
-from .serializers import CommentSerializer, CreateTaskSerializer, TaskSerializer, UserSerializer, CreateIprSerializer, ReadIprSerializer
+from .serializers import CommentSerializer, CreateTaskSerializer, TaskSerializer, UserSerializer, CreateIprSerializer, \
+    ReadIprSerializer, UpdateTaskSerializer
 from iprs.models import Ipr, Task
 from users.models import User
 
 
-class UserList(generics.ListCreateAPIView): # используй viewsets
+class UserList(generics.ListCreateAPIView):  # используй viewsets
     queryset = User.objects.all()
     serializer_class = UserSerializer
     # authentication_classes = (authentication.BasicAuthentication,)
@@ -30,15 +32,15 @@ class IprViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticated,)
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('status', 'end_date',)
-    
+
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return ReadIprSerializer
         return CreateIprSerializer
-    
+
     def perform_create(self, serializer):
         serializer.save(author=self.request.user)
-    
+
     def get_queryset(self):
         """
         Если руководитель/подчиненный определяется в модели User типом bool:
@@ -52,14 +54,23 @@ class IprViewSet(viewsets.ModelViewSet):
 class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = TaskFilter
 
     def get_serializer_class(self):
-        if self.request.method == 'GET':
-            return TaskSerializer
-        return CreateTaskSerializer
+        if self.action == 'create':
+            return CreateTaskSerializer
+        elif self.action in ['update', 'partial_update']:
+            return UpdateTaskSerializer
+        return TaskSerializer
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        ipr = get_object_or_404(Ipr, id=self.kwargs.get('ipr_id'))
+        serializer.save(author=self.request.user, ipr=ipr)
+
+    def get_queryset(self):
+        ipr = get_object_or_404(Ipr, id=self.kwargs.get('ipr_id'))
+        return ipr.tasks_ipr.all()
 
 
 class CommentViewSet(viewsets.ModelViewSet):
