@@ -1,28 +1,41 @@
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import generics, authentication, permissions, viewsets
+from django.db.models import QuerySet
+from rest_framework import decorators, permissions, viewsets
+from rest_framework.response import Response
 
-from .permissions import IsAdminOrSelf, IsAuthenticatedReadOnly
+from .permissions import IsAuthenticatedReadOnly
 from .serializers import CommentSerializer, CreateTaskSerializer, TaskSerializer, UserSerializer, CreateIprSerializer, ReadIprSerializer
 from iprs.models import Ipr, Task
 from users.models import User
 
 
-class UserList(generics.ListCreateAPIView): # используй viewsets
+class UserViewSet(
+    viewsets.ReadOnlyModelViewSet
+):
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    # authentication_classes = (authentication.BasicAuthentication,)
-    permission_classes = (permissions.IsAdminUser,)
+    permission_classes = (IsAuthenticatedReadOnly,)
 
-
-class UserDetail(generics.RetrieveUpdateDestroyAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
-    # authentication_classes = (authentication.BasicAuthentication,)
-    permission_classes = (
-        IsAdminOrSelf,
-        IsAuthenticatedReadOnly,
+    def get_object(self):
+        if self.kwargs['pk'] == 'me':
+            return self.request.user
+        return super().get_object()
+    
+    @decorators.action(
+        methods=('get',),
+        detail=False,
     )
+    def get_subordinates(self, request):
+        user = request.user
+        subordinates: QuerySet['User'] = user.subordinates.all()
+        page = self.paginate_queryset(subordinates)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(subordinates, many=True)
+        return Response(serializer.data)
 
 
 class IprViewSet(viewsets.ModelViewSet):
