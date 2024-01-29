@@ -120,9 +120,9 @@ class TaskSerializer(serializers.ModelSerializer):
         read_only=True,
         slug_field='username'
     )
-    # ipr = serializers.StringRelatedField(
-    #     read_only=True
-    # )
+    ipr = serializers.StringRelatedField(
+        read_only=True
+    )
 
     class Meta:
         model = Task
@@ -132,20 +132,32 @@ class TaskSerializer(serializers.ModelSerializer):
             'description',
             'status',
             'author',
-            # 'ipr',
-            'deadline',
-            'created_date'
+            'ipr',
+            'end_date',
+            'created_date',
+            'start_date'
         )
 
 
-class CreateTaskSerializer(serializers.ModelSerializer):
+class UpdateTaskSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
         read_only=True,
         slug_field='username'
     )
 
-    def create(self, validated_data):
-        return Task.objects.create(**validated_data)
+    class Meta:
+        model = Task
+        fields = (
+            'id',
+            'title',
+            'description',
+            'status',
+            'author',
+            'status',
+            'end_date',
+            'created_date',
+            'start_date'
+        )
 
     def update(self, instance, validated_data):
         request = self.context.get('request')
@@ -162,17 +174,42 @@ class CreateTaskSerializer(serializers.ModelSerializer):
                 'status',
                 instance.status
             )
-            instance.deadline = validated_data.get(
-                'deadline',
-                instance.deadline
+            instance.start_date = validated_data.get(
+                'start_date',
+                instance.start_date
             )
-        # if request.user == instance.employee:
-        #     instance.status = validated_data.get(
-        #         'status',
-        #         instance.status
-        #     )
         instance.save()
         return instance
+
+    def validate_status(self, value):
+        user = self.context['request'].user
+        if user.subordinates and value not in ['in_progress', 'done']:
+            raise serializers.ValidationError("Невозможное значение")
+        return value
+
+    def validate(self, data):
+        if self.instance and 'created_date' in data and data['created_date'] != self.instance.created_date:
+            raise serializers.ValidationError({"created_date": "Нельзя изменять поле created_date."})
+
+        if self.instance and 'end_date' in data and data['end_date'] != self.instance.end_date:
+            raise serializers.ValidationError({"end_date": "Нельзя изменять поле end_date."})
+
+        return data
+
+
+class CreateTaskSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        read_only=True,
+        slug_field='username'
+    )
+    status = serializers.CharField(default='no_status', read_only=True)
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        if user.superiors:
+            task = Task.objects.create(**validated_data)
+            return task
+        raise serializers.ValidationError("Только руководитель может создавать задачи.")
 
     class Meta:
         model = Task
@@ -182,8 +219,9 @@ class CreateTaskSerializer(serializers.ModelSerializer):
             'description',
             'status',
             'author',
-            # 'ipr',
-            'deadline',
+            'ipr',
+            'start_date',
+            'end_date',
             'created_date'
         )
 
