@@ -10,13 +10,13 @@ class UserSerializer(serializers.ModelSerializer):
             "id",
             "photo",
             "username",
-            "firstname",
-            "lastname",
+            "first_name",
+            "last_name",
             "patronymic",
             "email",
             "position",
-            "superior",
-            "subordinates",
+            "superiors",
+            'subordinates'
         ]
 
 

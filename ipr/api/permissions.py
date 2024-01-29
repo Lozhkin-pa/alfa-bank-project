@@ -7,11 +7,13 @@ class IsAuthenticatedReadOnly(permissions.BasePermission):
     to change the resource.
     """
 
+    def has_permission(self, request, view):
+        return request.user and request.user.is_authenticated
+
     def has_object_permission(self, request, view, obj):
         if request.method in permissions.SAFE_METHODS:
             return True
-        else:
-            return False
+        return False
 
 
 class IsAdminOrSelf(permissions.BasePermission):
