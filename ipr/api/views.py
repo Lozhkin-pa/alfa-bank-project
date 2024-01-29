@@ -5,9 +5,9 @@ from rest_framework import decorators, permissions, viewsets
 from rest_framework.response import Response
 
 from .filters import TaskFilter
-from .permissions import IsAdminOrSelf, IsAuthenticatedReadOnly
 from .serializers import CommentSerializer, CreateTaskSerializer, TaskSerializer, UserSerializer, CreateIprSerializer, \
     ReadIprSerializer, UpdateTaskSerializer
+from .permissions import IsAdminOrSelf, IsAuthenticatedReadOnly, IsAuthorIpr, IsAuthorIprOrIsEmployee
 from iprs.models import Ipr, Task
 from users.models import User
 
@@ -41,11 +41,13 @@ class UserViewSet(
 
 
 class IprViewSet(viewsets.ModelViewSet):
-    queryset = Ipr.objects.all()
-    permission_classes = (permissions.IsAuthenticated,)
+    """
+    Текущий пользователь - руководитель - автор ИПР.
+    """
+    permission_classes = (IsAuthorIpr,)
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('status', 'end_date',)
-
+    filterset_fields = ('employee__last_name', 'status', 'end_date',)
+    
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return ReadIprSerializer
@@ -55,13 +57,24 @@ class IprViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user)
 
     def get_queryset(self):
-        """
-        Если руководитель/подчиненный определяется в модели User типом bool:
-        """
-        if self.request.user.superior:
-            return Ipr.objects.filter(author=self.request.user)
-        if self.request.user.subordinates:
-            return Ipr.objects.filter(employee=self.request.user)
+        return Ipr.objects.filter(author=self.request.user)
+
+
+class MyIprViewSet(viewsets.ModelViewSet):
+    """
+    Текущий пользователь - линейный сотрудник, для которого создали ИПР.
+    """
+    permission_classes = (IsAuthorIprOrIsEmployee,)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('status', 'end_date',)
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return ReadIprSerializer
+        return CreateIprSerializer
+
+    def get_queryset(self):
+        return Ipr.objects.filter(employee=self.request.user)
 
 
 class TaskViewSet(viewsets.ModelViewSet):
