@@ -21,10 +21,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class ReadIprSerializer(serializers.ModelSerializer):
-    # tasks = serializers.StringRelatedField(
-    #     many=True,
-    #     read_only=True
-    # )
     author = serializers.StringRelatedField(
         read_only=True
     )
@@ -43,13 +39,12 @@ class ReadIprSerializer(serializers.ModelSerializer):
             'status',
             'created_date',
             'end_date',
-            # 'tasks',
         )
 
 
 class CreateIprSerializer(serializers.ModelSerializer):
     employee = serializers.PrimaryKeyRelatedField( 
-        queryset=User.objects.all(),
+        queryset=User.objects.all().prefetch_related('subordinates'),
     )
 
     def create(self, validated_data):
@@ -61,8 +56,16 @@ class CreateIprSerializer(serializers.ModelSerializer):
                 {'errors': 'Такой ИПР уже существует!'}
             )
         request = self.context.get('request')
-        # if validated_data.get('employee') == request.user.subordinates:
-        if request.user.superior: # Если руководитель/подчиненный определяется в модели User типом bool
+        if not User.objects.filter(
+            superior=request.user,
+            subordinates=validated_data.get('employee')
+        ).exists():
+        # if validated_data.get('employee') != request.user.subordinates:
+            raise serializers.ValidationError(
+                {'errors': 'ИПР можно создать только для своего подчиненного!'}
+            )
+        else:
+        # if validated_data.get('employee') != request.user:
             ipr = Ipr.objects.create(**validated_data)
         return ipr
 
