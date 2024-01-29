@@ -203,7 +203,7 @@ class CreateTaskSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         user = self.context['request'].user
-        if user.superior:
+        if user.superiors:
             task = Task.objects.create(**validated_data)
             return task
         raise serializers.ValidationError("Только руководитель может создавать задачи.")
