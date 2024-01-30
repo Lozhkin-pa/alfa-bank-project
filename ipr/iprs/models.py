@@ -45,12 +45,12 @@ class Ipr(models.Model):
         default=NO_STATUS,
         verbose_name='Статус ИПР'
     )
-    created_date = models.DateTimeField(
+    created_date = models.DateField(
         auto_now=False,
         auto_now_add=True,
         verbose_name='Дата создания ИПР'
     )
-    end_date = models.DateTimeField(
+    end_date = models.DateField(
         auto_now=False,
         auto_now_add=False,
         verbose_name='Дата завершения ИПР'

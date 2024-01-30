@@ -6,12 +6,8 @@ from api import views
 
 v1_router = DefaultRouter()
 v1_router.register('iprs/my/', views.MyIprViewSet, basename='my_iprs')
+v1_router.register('iprs/subordinates/', views.IprViewSet, basename='iprs')
 v1_router.register('users', views.UserViewSet, basename='users')
-v1_router.register('iprs', views.IprViewSet, basename='iprs')
-# v1_router.register(
-#     'tasks', views.TaskViewSet,
-#     basename='tasks'
-# )
 v1_router.register(
     r'tasks/(?P<task_id>\d+)/comments',
     views.CommentViewSet,
