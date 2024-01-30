@@ -56,11 +56,9 @@ class CreateIprSerializer(serializers.ModelSerializer):
                 {'errors': 'Такой ИПР уже существует!'}
             )
         request = self.context.get('request')
-        if not User.objects.filter(
-            superiors=request.user,
-            employee=validated_data.get('employee')
-        ):
+        # if not User.objects.filter(superiors__subordinates__user=validated_data.get('employee')):
         # if validated_data.get('employee') != request.user.subordinates:
+        if validated_data.get('employee') != request.user.superiors__subordinates__user:
             raise serializers.ValidationError(
                 {'errors': 'ИПР можно создать только для своего подчиненного!'}
             )
