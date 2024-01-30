@@ -82,9 +82,9 @@ class CreateIprSerializer(serializers.ModelSerializer):
                 'status',
                 instance.status
             )
-            instance.end_date = validated_data.get(
+            instance.start_date = validated_data.get(
                 'start_date',
-                instance.end_date
+                instance.start_date
             )
             instance.end_date = validated_data.get(
                 'end_date',
