@@ -5,16 +5,22 @@ from api import views
 
 
 v1_router = DefaultRouter()
+v1_router.register('iprs/my/', views.MyIprViewSet, basename='my_iprs')
 v1_router.register('users', views.UserViewSet, basename='users')
 v1_router.register('iprs', views.IprViewSet, basename='iprs')
-v1_router.register(
-    'tasks', views.TaskViewSet,
-    basename='task'
-)
+# v1_router.register(
+#     'tasks', views.TaskViewSet,
+#     basename='tasks'
+# )
 v1_router.register(
     r'tasks/(?P<task_id>\d+)/comments',
     views.CommentViewSet,
     basename='comment'
+)
+v1_router.register(
+    r'iprs/(?P<ipr_id>\d+)/tasks',
+    views.TaskViewSet,
+    basename='task'
 )
 
 urlpatterns = [

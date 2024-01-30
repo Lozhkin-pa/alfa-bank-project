@@ -4,7 +4,7 @@ from django.db.models import QuerySet
 from rest_framework import decorators, permissions, viewsets
 from rest_framework.response import Response
 
-from .permissions import IsAuthenticatedReadOnly
+from .filters import TaskFilter
 from .serializers import (
     CommentSerializer,
     CreateTaskSerializer,
@@ -12,6 +12,12 @@ from .serializers import (
     UserSerializer,
     CreateIprSerializer,
     ReadIprSerializer,
+    UpdateTaskSerializer
+)
+from .permissions import (
+    IsAuthenticatedReadOnly,
+    IsAuthorIpr,
+    IsAuthorIprOrIsEmployee,
 )
 from iprs.models import Ipr, Task
 from users.models import User
@@ -46,10 +52,12 @@ class UserViewSet(
 
 
 class IprViewSet(viewsets.ModelViewSet):
-    queryset = Ipr.objects.all()
-    permission_classes = (permissions.IsAuthenticated,)
+    """
+    Текущий пользователь - руководитель - автор ИПР.
+    """
+    permission_classes = (IsAuthorIpr,)
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('status', 'end_date',)
+    filterset_fields = ('employee__last_name', 'status', 'end_date',)
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -60,26 +68,46 @@ class IprViewSet(viewsets.ModelViewSet):
         serializer.save(author=self.request.user)
 
     def get_queryset(self):
-        """
-        Если руководитель/подчиненный определяется в модели User типом bool:
-        """
-        if self.request.user.superior:
-            return Ipr.objects.filter(author=self.request.user)
-        if self.request.user.subordinates:
-            return Ipr.objects.filter(employee=self.request.user)
+        return Ipr.objects.filter(author=self.request.user)
+
+
+class MyIprViewSet(viewsets.ModelViewSet):
+    """
+    Текущий пользователь - линейный сотрудник, для которого создали ИПР.
+    """
+    permission_classes = (IsAuthorIprOrIsEmployee,)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_fields = ('status', 'end_date',)
+
+    def get_serializer_class(self):
+        if self.request.method == 'GET':
+            return ReadIprSerializer
+        return CreateIprSerializer
+
+    def get_queryset(self):
+        return Ipr.objects.filter(employee=self.request.user)
 
 
 class TaskViewSet(viewsets.ModelViewSet):
     queryset = Task.objects.all()
     permission_classes = [permissions.IsAuthenticated]
+    filter_backends = [DjangoFilterBackend]
+    filterset_class = TaskFilter
 
     def get_serializer_class(self):
-        if self.request.method == 'GET':
-            return TaskSerializer
-        return CreateTaskSerializer
+        if self.action == 'create':
+            return CreateTaskSerializer
+        if self.action in ['update', 'partial_update']:
+            return UpdateTaskSerializer
+        return TaskSerializer
 
     def perform_create(self, serializer):
-        serializer.save(author=self.request.user)
+        ipr = get_object_or_404(Ipr, id=self.kwargs.get('ipr_id'))
+        serializer.save(author=self.request.user, ipr=ipr)
+
+    def get_queryset(self):
+        ipr = get_object_or_404(Ipr, id=self.kwargs.get('ipr_id'))
+        return ipr.tasks_ipr.all()
 
 
 class CommentViewSet(viewsets.ModelViewSet):
