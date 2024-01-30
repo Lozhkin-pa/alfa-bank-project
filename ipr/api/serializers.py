@@ -60,7 +60,7 @@ class CreateIprSerializer(serializers.ModelSerializer):
             superiors=request.user,
             employee=validated_data.get('employee')
         ):
-        # if validated_data.get('employee') != request.user.subordinates:
+        # if validated_data.get('employee') != request.user.subordinates: 
             raise serializers.ValidationError(
                 {'errors': 'ИПР можно создать только для своего подчиненного!'}
             )
