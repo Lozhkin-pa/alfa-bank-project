@@ -38,6 +38,7 @@ class ReadIprSerializer(serializers.ModelSerializer):
             'description',
             'status',
             'created_date',
+            'start_date',
             'end_date',
         )
 
@@ -82,6 +83,10 @@ class CreateIprSerializer(serializers.ModelSerializer):
                 instance.status
             )
             instance.end_date = validated_data.get(
+                'start_date',
+                instance.end_date
+            )
+            instance.end_date = validated_data.get(
                 'end_date',
                 instance.end_date
             )
@@ -108,6 +113,7 @@ class CreateIprSerializer(serializers.ModelSerializer):
             'employee',
             'description',
             'status',
+            'start_date',
             'end_date',
         )
 
