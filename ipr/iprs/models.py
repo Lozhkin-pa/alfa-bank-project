@@ -53,11 +53,13 @@ class Ipr(models.Model):
     start_date = models.DateField(
         auto_now=False,
         auto_now_add=False,
+        default=None,
         verbose_name='Дата начала ИПР'
     )
     end_date = models.DateField(
         auto_now=False,
         auto_now_add=False,
+        default=None,
         verbose_name='Дата завершения ИПР'
     )
 
