@@ -5,9 +5,20 @@ from rest_framework import decorators, permissions, viewsets
 from rest_framework.response import Response
 
 from .filters import TaskFilter
-from .serializers import CommentSerializer, CreateTaskSerializer, TaskSerializer, UserSerializer, CreateIprSerializer, \
-    ReadIprSerializer, UpdateTaskSerializer
-from .permissions import IsAdminOrSelf, IsAuthenticatedReadOnly, IsAuthorIpr, IsAuthorIprOrIsEmployee
+from .serializers import (
+    CommentSerializer,
+    CreateTaskSerializer,
+    TaskSerializer,
+    UserSerializer,
+    CreateIprSerializer,
+    ReadIprSerializer,
+    UpdateTaskSerializer
+)
+from .permissions import (
+    IsAuthenticatedReadOnly,
+    IsAuthorIpr,
+    IsAuthorIprOrIsEmployee,
+)
 from iprs.models import Ipr, Task
 from users.models import User
 
@@ -23,7 +34,7 @@ class UserViewSet(
         if self.kwargs['pk'] == 'me':
             return self.request.user
         return super().get_object()
-    
+
     @decorators.action(
         methods=('get',),
         detail=False,
@@ -47,7 +58,7 @@ class IprViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthorIpr,)
     filter_backends = (DjangoFilterBackend,)
     filterset_fields = ('employee__last_name', 'status', 'end_date',)
-    
+
     def get_serializer_class(self):
         if self.request.method == 'GET':
             return ReadIprSerializer

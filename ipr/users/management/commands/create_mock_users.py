@@ -29,7 +29,7 @@ class Command(BaseCommand):
         user.set_password(PASSWORD)
         user.save()
         return user
-    
+
     def create_subordinates(self, superior: User) -> None:
         for i in range(1, 10):
             user = User.objects.create(
