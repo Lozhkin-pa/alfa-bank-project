@@ -38,6 +38,7 @@ class ReadIprSerializer(serializers.ModelSerializer):
             'description',
             'status',
             'created_date',
+            'start_date',
             'end_date',
         )
 
@@ -48,19 +49,17 @@ class CreateIprSerializer(serializers.ModelSerializer):
     )
 
     def create(self, validated_data):
+        employee = validated_data.get('employee')
         if Ipr.objects.filter(
             title=validated_data.get('title'),
-            employee=validated_data.get('employee')
+            employee=employee
         ).exists():
             raise serializers.ValidationError(
                 {'errors': 'Такой ИПР уже существует!'}
             )
         request = self.context.get('request')
-        if not User.objects.filter(
-            superiors=request.user,
-            employee=validated_data.get('employee')
-        ):
-        # if validated_data.get('employee') != request.user.subordinates: 
+        user = request.user
+        if not employee in user.subordinates.all():
             raise serializers.ValidationError(
                 {'errors': 'ИПР можно создать только для своего подчиненного!'}
             )
@@ -82,6 +81,10 @@ class CreateIprSerializer(serializers.ModelSerializer):
             instance.status = validated_data.get(
                 'status',
                 instance.status
+            )
+            instance.start_date = validated_data.get(
+                'start_date',
+                instance.start_date
             )
             instance.end_date = validated_data.get(
                 'end_date',
@@ -110,6 +113,7 @@ class CreateIprSerializer(serializers.ModelSerializer):
             'employee',
             'description',
             'status',
+            'start_date',
             'end_date',
         )
 
