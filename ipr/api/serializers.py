@@ -27,6 +27,16 @@ class ReadIprSerializer(serializers.ModelSerializer):
     employee = serializers.StringRelatedField(
         read_only=True
     )
+    start_date = serializers.SerializerMethodField(read_only=True)
+    end_date = serializers.SerializerMethodField(read_only=True)
+
+    def get_start_date(self, obj):
+        tasks = obj.tasks_ipr.all().order_by('start_date')
+        return tasks[0].start_date
+    
+    def get_end_date(self, obj):
+        tasks = obj.tasks_ipr.all().order_by('end_date')
+        return tasks[-1].end_date
 
     class Meta:
         model = Ipr
@@ -113,8 +123,8 @@ class CreateIprSerializer(serializers.ModelSerializer):
             'employee',
             'description',
             'status',
-            'start_date',
-            'end_date',
+            # 'start_date',
+            # 'end_date',
         )
 
 
