@@ -33,14 +33,14 @@ class ReadIprSerializer(serializers.ModelSerializer):
     def get_start_date(self, obj):
         if obj.tasks_ipr.all().count() > 0:
             tasks = obj.tasks_ipr.all().order_by('start_date')
-            return tasks[0].start_date
+            return tasks.first().start_date
         else:
             return obj.start_date
     
     def get_end_date(self, obj):
         if obj.tasks_ipr.all().count() > 0:
             tasks = obj.tasks_ipr.all().order_by('end_date')
-            return tasks[-1].end_date
+            return tasks.last().end_date
         else:
             return obj.end_date
 
