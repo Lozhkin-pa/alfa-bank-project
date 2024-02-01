@@ -31,14 +31,14 @@ class ReadIprSerializer(serializers.ModelSerializer):
     end_date = serializers.SerializerMethodField(read_only=True, default=None)
 
     def get_start_date(self, obj):
-        if obj.tasks_ipr:
+        if obj.tasks_ipr.all().count() > 0:
             tasks = obj.tasks_ipr.all().order_by('start_date')
             return tasks[0].start_date
         else:
             return obj.start_date
     
     def get_end_date(self, obj):
-        if obj.tasks_ipr:
+        if obj.tasks_ipr.all().count() > 0:
             tasks = obj.tasks_ipr.all().order_by('end_date')
             return tasks[-1].end_date
         else:
