@@ -173,8 +173,8 @@ class UpdateTaskSerializer(serializers.ModelSerializer):
             'status',
             'author',
             'status',
-            'end_date',
             'created_date',
+            'end_date',
             'start_date'
         )
 
@@ -200,20 +200,17 @@ class UpdateTaskSerializer(serializers.ModelSerializer):
         instance.save()
         return instance
 
-    def validate_status(self, value):
-        user = self.context['request'].user
-        if user.subordinates and value not in ['in_progress', 'done']:
-            raise serializers.ValidationError("Невозможное значение")
-        return value
+    # def validate_status(self, value):
+    #     user = self.context['request'].user
+    #     if user.subordinates and value not in ['in_progress', 'done']:
+    #         raise serializers.ValidationError("Невозможное значение")
+    #     return value
 
-    def validate(self, data):
-        if self.instance and 'created_date' in data and data['created_date'] != self.instance.created_date:
-            raise serializers.ValidationError({"created_date": "Нельзя изменять поле created_date."})
+    # def validate(self, data):
+    #     if self.instance and 'end_date' in data and data['end_date'] != self.instance.end_date:
+    #         raise serializers.ValidationError({"end_date": "Нельзя изменять поле end_date."})
 
-        if self.instance and 'end_date' in data and data['end_date'] != self.instance.end_date:
-            raise serializers.ValidationError({"end_date": "Нельзя изменять поле end_date."})
-
-        return data
+    #     return data
 
 
 class CreateTaskSerializer(serializers.ModelSerializer):
