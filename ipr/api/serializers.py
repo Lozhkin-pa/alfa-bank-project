@@ -20,11 +20,27 @@ class UserSerializer(serializers.ModelSerializer):
         ]
 
 
+class EmployeeSerializer(serializers.ModelSerializer):
+    fullname = serializers.SerializerMethodField(read_only=True)
+
+    def get_fullname(self, obj):
+        return f'{obj.last_name} {obj.first_name} {obj.patronymic}'
+
+    class Meta:
+        model = User
+        fields = (
+            'id',
+            'photo',
+            'fullname',
+            'position'
+        )
+
+
 class ReadIprSerializer(serializers.ModelSerializer):
     author = serializers.StringRelatedField(
         read_only=True
     )
-    employee = serializers.StringRelatedField(
+    employee = EmployeeSerializer(
         read_only=True
     )
     start_date = serializers.SerializerMethodField(read_only=True, default=None)
