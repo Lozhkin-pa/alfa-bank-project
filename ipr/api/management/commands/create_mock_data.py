@@ -1,8 +1,7 @@
 import datetime as dt
 from random import choice
-from typing import Any
 
-from django.core.management.base import BaseCommand, CommandParser
+from django.core.management.base import BaseCommand
 
 from users.models import User
 from iprs.models import Ipr, Task, Comment
@@ -72,7 +71,7 @@ class Command(BaseCommand):
                     ipr=ipr,
                     created_date=dt.datetime.now(),
                     start_date=dt.date.today(),
-                    end_date=dt.date.today()
+                    end_date=dt.date.today() + dt.timedelta(days=3)
                 )
     
     def create_comments(self, superior: User) -> None:
@@ -89,5 +88,5 @@ class Command(BaseCommand):
                 task=task,
                 text='Комментарий сотрудника в ответ на комментарий руководителя',
                 created_date=dt.datetime.now(),
-                reply=comment
+                # reply=comment
             )

@@ -259,6 +259,6 @@ class CommentSerializer(serializers.ModelSerializer):
             'author',
             'text',
             'created_date',
-            'reply'
+            # 'reply'
         )
         read_only_fields = ('task',)
