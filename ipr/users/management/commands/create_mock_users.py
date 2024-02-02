@@ -1,8 +1,11 @@
+import datetime as dt
 from random import choice
+from typing import Any
 
-from django.core.management.base import BaseCommand
+from django.core.management.base import BaseCommand, CommandParser
 
 from users.models import User
+from iprs.models import Ipr, Task, Comment
 
 NAMES = ('Иван', 'Олег', 'Петр', 'Михаил', 'Максим')
 SURNAMES = ('Олегович', 'Кириллович', 'Александрович', 'Павлович')
@@ -16,7 +19,10 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         superior = self.create_superior()
         self.create_subordinates(superior)
-        self.stdout.write(self.style.SUCCESS('Тестовые пользователи созданы'))
+        self.create_iprs(superior)
+        self.create_tasks(superior)
+        self.create_comments(superior)
+        self.stdout.write(self.style.SUCCESS('Тестовые данные созданы'))
 
     def create_superior(self) -> User:
         user = User.objects.create(
@@ -42,3 +48,46 @@ class Command(BaseCommand):
             user.superiors.add(superior)
             user.set_password(PASSWORD)
             user.save()
+    
+    def create_iprs(self, superior: User) -> None:
+        for employee in User.objects.filter(superiors=superior).all():
+            for i in range(1, 4):
+                Ipr.objects.create(
+                    title=f'Название ИПР №{i}',
+                    employee=employee,
+                    author=superior,
+                    description=f'Описание ИПР №{i}',
+                    status='No status',
+                    created_date=dt.datetime.now(),
+                )
+    
+    def create_tasks(self, superior: User) -> None:
+        for ipr in Ipr.objects.all():
+            for i in range(1, 4):
+                Task.objects.create(
+                    title=f'Название задачи №{i}',
+                    description=f'Описание задачи №{i}',
+                    status='No status',
+                    author=superior,
+                    ipr=ipr,
+                    created_date=dt.datetime.now(),
+                    start_date=dt.date.today(),
+                    end_date=dt.date.today()
+                )
+    
+    def create_comments(self, superior: User) -> None:
+        for task in Task.objects.all():
+            comment = Comment.objects.create(
+                author=superior,
+                task=task,
+                text='Комментарий руководителя',
+                created_date=dt.datetime.now()
+            )
+            comment.save()
+            Comment.objects.create(
+                author=task.ipr.employee,
+                task=task,
+                text='Комментарий сотрудника в ответ на комментарий руководителя',
+                created_date=dt.datetime.now(),
+                reply=comment
+            )
