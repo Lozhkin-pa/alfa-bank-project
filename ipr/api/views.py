@@ -10,6 +10,7 @@ from .serializers import (
     CreateTaskSerializer,
     TaskSerializer,
     UserSerializer,
+    EmployeeSerializer,
     CreateIprSerializer,
     ReadIprSerializer,
     UpdateTaskSerializer
@@ -47,6 +48,23 @@ class UserViewSet(
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
 
+        serializer = self.get_serializer(subordinates, many=True)
+        return Response(serializer.data)
+    
+    @decorators.action(
+        methods=('get',),
+        detail=False,
+        serializer_class=EmployeeSerializer
+    )
+    def subordinates_without_ipr(self, request):
+        user = request.user
+        subordinates: QuerySet['User'] = user.subordinates.filter(
+            ipr_employee=None
+        )
+        page = self.paginate_queryset(subordinates)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
         serializer = self.get_serializer(subordinates, many=True)
         return Response(serializer.data)
 
