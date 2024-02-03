@@ -130,6 +130,7 @@ class TaskViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
+    pagination_class = None
 
     def perform_create(self, serializer):
         task = get_object_or_404(Task, id=self.kwargs.get('task_id'))
