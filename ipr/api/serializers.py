@@ -197,6 +197,13 @@ class UpdateTaskSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         request = self.context.get('request')
         if request.user == instance.author:
+            allowed_statuses = (Task.FAILED, Task.CANCELED)
+            instance.status = validated_data.get(
+                'status',
+                instance.status
+            )
+            if instance.status not in allowed_statuses:
+                raise serializers.ValidationError("Недопустимый статус")
             instance.title = validated_data.get(
                 'title',
                 instance.title
@@ -213,20 +220,20 @@ class UpdateTaskSerializer(serializers.ModelSerializer):
                 'start_date',
                 instance.start_date
             )
+            instance.end_date = validated_data.get(
+                'end_date',
+                instance.end_date
+            )
+        if request.user in instance.author.subordinates.all():
+            allowed_statuses = (Task.DONE, Task.IN_PROGRESS)
+            instance.status = validated_data.get(
+                'status',
+                instance.status
+            )
+            if instance.status not in allowed_statuses:
+                raise serializers.ValidationError("Недопустимый статус")
         instance.save()
         return instance
-
-    # def validate_status(self, value):
-    #     user = self.context['request'].user
-    #     if user.subordinates and value not in ['in_progress', 'done']:
-    #         raise serializers.ValidationError("Невозможное значение")
-    #     return value
-
-    # def validate(self, data):
-    #     if self.instance and 'end_date' in data and data['end_date'] != self.instance.end_date:
-    #         raise serializers.ValidationError({"end_date": "Нельзя изменять поле end_date."})
-
-    #     return data
 
 
 class CreateTaskSerializer(serializers.ModelSerializer):
@@ -234,7 +241,7 @@ class CreateTaskSerializer(serializers.ModelSerializer):
         read_only=True,
         slug_field='username'
     )
-    status = serializers.CharField(default='no_status', read_only=True)
+    status = serializers.CharField(default=Task.NO_STATUS, read_only=True)
 
     def create(self, validated_data):
         user = self.context['request'].user
