@@ -39,7 +39,7 @@ ALLOWED_HOSTS = os.getenv(
     default='localhost 127.0.0.1 [::1] testserver',
 ).split(' ')
 
-CSRF_TRUSTED_ORIGINS = ('https://alfahackathon.hopto.org/',)
+CSRF_TRUSTED_ORIGINS = ['https://alfahackathon.hopto.org']
 
 AUTH_USER_MODEL = 'users.User'
 
