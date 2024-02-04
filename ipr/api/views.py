@@ -10,6 +10,7 @@ from .serializers import (
     CreateTaskSerializer,
     TaskSerializer,
     UserSerializer,
+    EmployeeSerializer,
     CreateIprSerializer,
     ReadIprSerializer,
     UpdateTaskSerializer
@@ -38,15 +39,33 @@ class UserViewSet(
     @decorators.action(
         methods=('get',),
         detail=False,
+        pagination_class=None
     )
     def get_subordinates(self, request):
         user = request.user
         subordinates: QuerySet['User'] = user.subordinates.all()
+        # page = self.paginate_queryset(subordinates)
+        # if page is not None:
+        #     serializer = self.get_serializer(page, many=True)
+        #     return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(subordinates, many=True)
+        return Response(serializer.data)
+    
+    @decorators.action(
+        methods=('get',),
+        detail=False,
+        serializer_class=EmployeeSerializer
+    )
+    def subordinates_without_ipr(self, request):
+        user = request.user
+        subordinates: QuerySet['User'] = user.subordinates.filter(
+            ipr_employee=None
+        )
         page = self.paginate_queryset(subordinates)
         if page is not None:
             serializer = self.get_serializer(page, many=True)
             return self.get_paginated_response(serializer.data)
-
         serializer = self.get_serializer(subordinates, many=True)
         return Response(serializer.data)
 
@@ -57,7 +76,12 @@ class IprViewSet(viewsets.ModelViewSet):
     """
     permission_classes = (IsAuthorIpr,)
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('employee__last_name', 'status', 'end_date',)
+    filterset_fields = (
+        'employee__last_name',
+        'status',
+        'start_date',
+        'end_date',
+    )
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -77,7 +101,7 @@ class MyIprViewSet(viewsets.ModelViewSet):
     """
     permission_classes = (IsAuthorIprOrIsEmployee,)
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('status', 'end_date',)
+    filterset_fields = ('status', 'start_date', 'end_date',)
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
@@ -93,6 +117,7 @@ class TaskViewSet(viewsets.ModelViewSet):
     permission_classes = [permissions.IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_class = TaskFilter
+    pagination_class = None
 
     def get_serializer_class(self):
         if self.action == 'create':
@@ -112,6 +137,7 @@ class TaskViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = CommentSerializer
+    pagination_class = None
 
     def perform_create(self, serializer):
         task = get_object_or_404(Task, id=self.kwargs.get('task_id'))

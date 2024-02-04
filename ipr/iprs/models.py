@@ -51,14 +51,12 @@ class Ipr(models.Model):
         verbose_name='Дата создания ИПР'
     )
     start_date = models.DateField(
-        auto_now=False,
-        auto_now_add=False,
-        verbose_name='Дата начала ИПР'
+        verbose_name='Дата начала ИПР',
+        null=True
     )
     end_date = models.DateField(
-        auto_now=False,
-        auto_now_add=False,
-        verbose_name='Дата завершения ИПР'
+        verbose_name='Дата завершения ИПР',
+        null=True
     )
 
     class Meta:
@@ -78,13 +76,19 @@ class Ipr(models.Model):
 
 class Task(models.Model):
     """Модель задач"""
-    STATUS_CHOICE = [
-        ('failed', 'Просрочен'),
-        ('no_status', 'Без статуса'),
-        ('in_progress', 'В работе'),
-        ('done', 'Выполнен'),
-        ('canceled', 'Отменен'),
-    ]
+    IN_PROGRESS = 'In progress'
+    DONE = 'Done'
+    FAILED = 'Failed'
+    CANCELED = 'Canceled'
+    NO_STATUS = 'No status'
+    STATUS_CHOICES = (
+        (IN_PROGRESS, 'В работе'),
+        (DONE, 'Выполнен'),
+        (FAILED, 'Не выполнен'),
+        (CANCELED, 'Отменен'),
+        (NO_STATUS, 'Отсутствует'),
+    )
+
     title = models.CharField(
         max_length=200,
         verbose_name="Название"
@@ -94,7 +98,7 @@ class Task(models.Model):
     )
     status = models.CharField(
         max_length=20,
-        choices=STATUS_CHOICE,
+        choices=STATUS_CHOICES,
         default='no_status',
         verbose_name='Статус'
     )
@@ -148,13 +152,13 @@ class Comment(models.Model):
         auto_now_add=True,
         db_index=True
     )
-    reply = models.ForeignKey(
-        'self',
-        related_name=('replies'),
-        on_delete=models.CASCADE,
-        blank=True,
-        null=True
-    )
+    # reply = models.ForeignKey(
+    #     'self',
+    #     related_name=('replies'),
+    #     on_delete=models.CASCADE,
+    #     blank=True,
+    #     null=True
+    # )
 
     class Meta:
         verbose_name = 'Коментарий'
