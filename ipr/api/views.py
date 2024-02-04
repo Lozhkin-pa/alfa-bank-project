@@ -100,7 +100,8 @@ class MyIprViewSet(viewsets.ModelViewSet):
     """
     permission_classes = (IsAuthorIprOrIsEmployee,)
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('status', 'start_date', 'end_date',)
+    filter_class = IprFilter
+    filterset_fields = ('status',)
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
