@@ -30,6 +30,7 @@ class Command(BaseCommand):
             last_name='Сидоров',
             patronymic='Иванович',
             position='Team Lead',
+            photo='users/superior.jpg',
         )
         user.set_password(PASSWORD)
         user.save()
@@ -43,6 +44,7 @@ class Command(BaseCommand):
                 last_name=choice(LAST_NAMES),
                 patronymic=choice(SURNAMES),
                 position='Python developer',
+                photo=f'users/subordinates_{i}',
             )
             user.superiors.add(superior)
             user.set_password(PASSWORD)
