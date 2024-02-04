@@ -39,7 +39,8 @@ class UserViewSet(
     @decorators.action(
         methods=('get',),
         detail=False,
-        pagination_class=None
+        pagination_class=None,
+        url_name='get_subordinates'
     )
     def get_subordinates(self, request):
         user = request.user
