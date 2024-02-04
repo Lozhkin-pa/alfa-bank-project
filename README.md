@@ -75,6 +75,13 @@ docker compose -f docker-compose-local.yml up -d
 docker compose up -d
 ```
 
+## Тестирование
+Тестирование производится командой:
+```
+python manage.py test
+```
+
+Покрытие тестами около 70%
 
 ## Стэк технологий  
 ![Docker](https://img.shields.io/badge/docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
