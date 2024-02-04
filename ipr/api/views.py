@@ -4,7 +4,7 @@ from django.db.models import QuerySet
 from rest_framework import decorators, permissions, viewsets
 from rest_framework.response import Response
 
-from .filters import TaskFilter
+from .filters import TaskFilter, IprFilter
 from .serializers import (
     CommentSerializer,
     CreateTaskSerializer,
@@ -76,11 +76,10 @@ class IprViewSet(viewsets.ModelViewSet):
     """
     permission_classes = (IsAuthorIpr,)
     filter_backends = (DjangoFilterBackend,)
+    filter_class = IprFilter
     filterset_fields = (
         'employee__last_name',
         'status',
-        'start_date',
-        'end_date',
     )
 
     def get_serializer_class(self):
@@ -101,7 +100,8 @@ class MyIprViewSet(viewsets.ModelViewSet):
     """
     permission_classes = (IsAuthorIprOrIsEmployee,)
     filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('status', 'start_date', 'end_date',)
+    filter_class = IprFilter
+    filterset_fields = ('status',)
 
     def get_serializer_class(self):
         if self.request.method == 'GET':
