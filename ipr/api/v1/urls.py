@@ -22,6 +22,6 @@ v1_router.register(
 )
 
 urlpatterns = [
-    path('auth/', obtain_auth_token),
+    path('auth/', obtain_auth_token, name='auth'),
     path('', include(v1_router.urls)),
 ]
