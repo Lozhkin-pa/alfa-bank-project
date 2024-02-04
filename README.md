@@ -35,6 +35,8 @@ Backend-разработчик – отвечает за обработку да
 ## Документация API в Swagger  
 https://alfahackathon.hopto.org/api/v1/swagger/  
 
+## Документация API в Redoc  
+https://alfahackathon.hopto.org/api/v1/Redoc/  
 
 ## Инструкция по сборке и запуску  
 
@@ -54,9 +56,9 @@ https://alfahackathon.hopto.org/api/v1/swagger/
    ```
 5. Необходимо в файле ipr/ipr/settings.py закоментировать строку CSRF_TRUSTED_ORIGINS = ['https://alfahackathon.hopto.org']
 6. Запустить БД в контейнере:
-   ```
-  docker compose -f docker-compose-local.yml up -d
-   ```
+```
+docker compose -f docker-compose-local.yml up -d
+```
 7. Запустить сервис разработчика:
 ```
   python manage.py runserver
