@@ -45,11 +45,6 @@ class UserViewSet(
     def get_subordinates(self, request):
         user = request.user
         subordinates: QuerySet['User'] = user.subordinates.all()
-        # page = self.paginate_queryset(subordinates)
-        # if page is not None:
-        #     serializer = self.get_serializer(page, many=True)
-        #     return self.get_paginated_response(serializer.data)
-
         serializer = self.get_serializer(subordinates, many=True)
         return Response(serializer.data)
     
@@ -77,10 +72,10 @@ class IprViewSet(viewsets.ModelViewSet):
     """
     permission_classes = (IsAuthorIpr,)
     filter_backends = (DjangoFilterBackend,)
-    filter_class = IprFilter
+    filterset_class = IprFilter
     filterset_fields = (
         'employee__last_name',
-        'status',
+        'status'
     )
 
     def get_serializer_class(self):
@@ -101,7 +96,7 @@ class MyIprViewSet(viewsets.ModelViewSet):
     """
     permission_classes = (IsAuthorIprOrIsEmployee,)
     filter_backends = (DjangoFilterBackend,)
-    filter_class = IprFilter
+    filterset_class = IprFilter
     filterset_fields = ('status',)
 
     def get_serializer_class(self):

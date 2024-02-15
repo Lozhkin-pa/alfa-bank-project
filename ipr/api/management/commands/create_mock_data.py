@@ -63,7 +63,7 @@ class Command(BaseCommand):
     def create_tasks(self, superior: User) -> None:
         for ipr in Ipr.objects.all():
             for i in range(1, 4):
-                Task.objects.create(
+                task = Task.objects.create(
                     title=f'Название задачи №{i}',
                     description=f'Описание задачи №{i}',
                     status='No status',
@@ -73,6 +73,17 @@ class Command(BaseCommand):
                     start_date=dt.date.today(),
                     end_date=dt.date.today() + dt.timedelta(days=3)
                 )
+                task.save()
+                if ipr.start_date == None and ipr.end_date == None:
+                    ipr.start_date = task.start_date
+                    ipr.end_date = task.end_date
+                    ipr.save()
+                if ipr.start_date > task.start_date:
+                    ipr.start_date = task.start_date
+                    ipr.save()
+                if ipr.end_date < task.end_date:
+                    ipr.end_date = task.end_date
+                    ipr.save()
     
     def create_comments(self, superior: User) -> None:
         for task in Task.objects.all():

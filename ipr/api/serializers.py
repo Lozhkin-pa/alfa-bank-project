@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from iprs.models import Comment, Ipr, Task
 from users.models import User
@@ -43,22 +44,22 @@ class ReadIprSerializer(serializers.ModelSerializer):
     employee = EmployeeSerializer(
         read_only=True
     )
-    start_date = serializers.SerializerMethodField(read_only=True, default=None)
-    end_date = serializers.SerializerMethodField(read_only=True, default=None)
+    # start_date = serializers.SerializerMethodField(read_only=True, default=None)
+    # end_date = serializers.SerializerMethodField(read_only=True, default=None)
 
-    def get_start_date(self, obj):
-        if obj.tasks_ipr.all().count() > 0:
-            tasks = obj.tasks_ipr.all().order_by('start_date')
-            return tasks.first().start_date
-        else:
-            return obj.start_date
+    # def get_start_date(self, obj):
+    #     if obj.tasks_ipr.all().count() > 0:
+    #         tasks = obj.tasks_ipr.all().order_by('start_date')
+    #         return tasks.first().start_date
+    #     else:
+    #         return obj.start_date
     
-    def get_end_date(self, obj):
-        if obj.tasks_ipr.all().count() > 0:
-            tasks = obj.tasks_ipr.all().order_by('end_date')
-            return tasks.last().end_date
-        else:
-            return obj.end_date
+    # def get_end_date(self, obj):
+    #     if obj.tasks_ipr.all().count() > 0:
+    #         tasks = obj.tasks_ipr.all().order_by('end_date')
+    #         return tasks.last().end_date
+    #     else:
+    #         return obj.end_date
 
     class Meta:
         model = Ipr
@@ -173,6 +174,18 @@ class TaskSerializer(serializers.ModelSerializer):
             'start_date'
         )
 
+def update_ipr_date(ipr, validated_data):
+        if ipr.start_date == None and ipr.end_date == None:
+            ipr.start_date = validated_data.get('start_date')
+            ipr.end_date = validated_data.get('end_date')
+            ipr.save()
+        if ipr.start_date > validated_data.get('start_date'):
+            ipr.start_date = validated_data.get('start_date')
+            ipr.save()
+        if ipr.end_date < validated_data.get('end_date'):
+            ipr.end_date = validated_data.get('end_date')
+            ipr.save()
+
 
 class UpdateTaskSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
@@ -224,6 +237,8 @@ class UpdateTaskSerializer(serializers.ModelSerializer):
                 'end_date',
                 instance.end_date
             )
+            ipr = get_object_or_404(Ipr, id=instance.ipr.id)
+            update_ipr_date(ipr, validated_data)
         if request.user in instance.author.subordinates.all():
             allowed_statuses = (Task.DONE, Task.IN_PROGRESS)
             instance.status = validated_data.get(
@@ -244,9 +259,12 @@ class CreateTaskSerializer(serializers.ModelSerializer):
     status = serializers.CharField(default=Task.NO_STATUS, read_only=True)
 
     def create(self, validated_data):
-        user = self.context['request'].user
+        request = self.context.get('request')
+        user = request.user
         if user.superiors:
             task = Task.objects.create(**validated_data)
+            ipr = get_object_or_404(Ipr, id=request.data.get('ipr'))
+            update_ipr_date(ipr, validated_data)
             return task
         raise serializers.ValidationError("Только руководитель может создавать задачи.")
 

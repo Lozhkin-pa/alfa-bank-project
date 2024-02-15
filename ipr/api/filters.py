@@ -13,7 +13,7 @@ class TaskFilter(filters.FilterSet):
         fields = ['start_date', 'end_date', 'status']
 
 
-class IprFilter(filters.Filter):
+class IprFilter(filters.FilterSet):
     start_date = filters.DateFilter(field_name='start_date', lookup_expr='gte')
     end_date = filters.DateFilter(field_name='end_date', lookup_expr='lte')
 
