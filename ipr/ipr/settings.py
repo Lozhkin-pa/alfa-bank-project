@@ -26,7 +26,7 @@ SECRET_KEY = os.getenv(
     default='x-ys%(uz@io!unn88^vg+8nhbj18+i@vny5jh_n(s8g=#5k@j#'
 )
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 if DEBUG:
     from dotenv import load_dotenv
@@ -39,7 +39,7 @@ ALLOWED_HOSTS = os.getenv(
     default='localhost 127.0.0.1 [::1] testserver',
 ).split(' ')
 
-# CSRF_TRUSTED_ORIGINS = ['https://alfahackathon.hopto.org']
+CSRF_TRUSTED_ORIGINS = ['https://alfahackathon.hopto.org']
 
 AUTH_USER_MODEL = 'users.User'
 
